@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employment Login</title>
+    <link rel="stylesheet" href="/login.css">
+    <!-- Load FontAwesome for the specific icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <div class="login-page">
+        <div class="card">
+            <div class="login-card-shell">
+                
+                <!-- FORM AREA -->
+                <form class="login-form-area" action="/api/login" method="POST">
+                    
+                    <div class="logo">
+                        <img src="/logo.svg" alt="Zillow Logo" class="logo-image">
+                    </div>
+
+                    <div class="login-header">
+                        <p class="eyebrow">Welcome back</p>
+                        <h2>Sign in to continue</h2>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Email</label>
+                        <input type="email" name="email" placeholder="Enter your email" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Password</label>
+                        <input type="password" name="password" placeholder="Enter your password" required>
+                    </div>
+
+                    <button type="submit" class="btn">Continue</button>
+
+                    <!-- STATUS MESSAGES -->
+                    <% if (locals.message) { %>
+                        <p class="status-message <%= locals.messageType %>"><%= locals.message %></p>
+                    <% } %>
+
+                    <div class="divider">
+                        <span>or</span>
+                    </div>
+
+                   <!-- NEW COLUMN STYLE SOCIAL BUTTONS -->
+<div class="social-buttons-column">
+    
+    <!-- Google Button -->
+    <button type="button" class="social-btn-wide">
+        <i class="fab fa-google" style="color: #ea4335; font-size: 20px;"></i>
+        <span>Continue with Google</span>
+    </button>
+
+    <!-- Facebook Button -->
+    <button type="button" class="social-btn-wide">
+        <i class="fab fa-facebook-f" style="color: #1877f2; font-size: 20px;"></i>
+        <span>Continue with Facebook</span>
+    </button>
+
+    <!-- X/Twitter Button -->
+    <button type="button" class="social-btn-wide">
+        <i class="fa-brands fa-x-twitter" style="color: #000; font-size: 20px;"></i>
+        <span>Continue with X</span>
+    </button>
+
+</div>
+
+                    <p class="terms-text">
+                        By submitting, I accept Zillow&apos;s <a href="#">Terms of Use</a>
+                    </p>
+
+                </form>
+
+                <!-- IMAGE PANEL -->
+                <div class="hero-image-panel">
+                    <img src="/login-banner.WEBP" alt="Luxury property">
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
