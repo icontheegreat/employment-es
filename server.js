@@ -33,19 +33,23 @@ app.use("/api", authRoutes);
 // MongoDB and Server Start
 const PORT = process.env.PORT || 2000;
 
-(async () => {
-  try {
-    if (!process.env.MONGO_URI) {
-      throw new Error("❌ MONGO_URI is missing! Add it to Render's Environment Variables.");
+if (process.env.VERCEL !== "1") {
+  (async () => {
+    try {
+      if (!process.env.MONGO_URI) {
+        throw new Error("❌ MONGO_URI is missing! Add it to your Environment Variables.");
+      }
+
+      await mongoose.connect(process.env.MONGO_URI);
+      console.log("✅ MongoDB connected");
+
+      app.listen(PORT, () => {
+        console.log(`🚀 Server running on http://localhost:${PORT}`);
+      });
+    } catch (error) {
+      console.error("❌ MongoDB connection failed:", error);
     }
+  })();
+}
 
-    await mongoose.connect(process.env.MONGO_URI);
-    console.log("✅ MongoDB connected");
-
-    app.listen(PORT, () => {
-      console.log(`🚀 Server running on http://localhost:${PORT}`);
-    });
-  } catch (error) {
-    console.error("❌ MongoDB connection failed:", error);
-  }
-})();
+module.exports = app;
