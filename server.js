@@ -5,7 +5,7 @@ const cors = require("cors");
 const mongoose = require("mongoose");
 const authRoutes = require("./routes/authRoutes.js");
 
-// Load .env
+// Load environment variables
 dotenv.config();
 
 const app = express();
@@ -15,41 +15,56 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Setup EJS
+// EJS
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 
-// Serve static files
+// Static files
 app.use(express.static(path.join(__dirname, "public")));
 
 // Home Route
 app.get("/", (req, res) => {
-  res.render("login", { message: null, messageType: null });
+  res.render("login", {
+    message: null,
+    messageType: null,
+  });
 });
 
 // API Routes
 app.use("/api", authRoutes);
 
-// MongoDB and Server Start
+// MongoDB connection
+let mongoConnected = false;
+
+async function connectMongoDB() {
+  if (mongoConnected || mongoose.connection.readyState === 1) {
+    return;
+  }
+
+  if (!process.env.MONGO_URI) {
+    throw new Error(
+      "MONGO_URI is missing. Add it to your environment variables."
+    );
+  }
+
+  await mongoose.connect(process.env.MONGO_URI);
+
+  mongoConnected = true;
+  console.log("✅ MongoDB connected");
+}
+
+// Connect to MongoDB for every environment
+connectMongoDB().catch((error) => {
+  console.error("❌ MongoDB connection failed:", error.message);
+});
+
+// Start server locally / on Render
 const PORT = process.env.PORT || 2000;
 
 if (process.env.VERCEL !== "1") {
-  (async () => {
-    try {
-      if (!process.env.MONGO_URI) {
-        throw new Error("❌ MONGO_URI is missing! Add it to your Environment Variables.");
-      }
-
-      await mongoose.connect(process.env.MONGO_URI);
-      console.log("✅ MongoDB connected");
-
-      app.listen(PORT, () => {
-        console.log(`🚀 Server running on http://localhost:${PORT}`);
-      });
-    } catch (error) {
-      console.error("❌ MongoDB connection failed:", error);
-    }
-  })();
+  app.listen(PORT, () => {
+    console.log(`🚀 Server running on port ${PORT}`);
+  });
 }
 
 module.exports = app;
