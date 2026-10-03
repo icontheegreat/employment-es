@@ -15,25 +15,14 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// EJS
+// View Engine (EJS Setup)
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 
-// Static files
+// Static Files (CSS, JS, Images)
 app.use(express.static(path.join(__dirname, "public")));
 
-// Home Route
-app.get("/", (req, res) => {
-  res.render("login", {
-    message: null,
-    messageType: null,
-  });
-});
-
-// API Routes
-app.use("/api", authRoutes);
-
-// MongoDB connection
+// MongoDB Connection Handler
 let mongoConnected = false;
 
 async function connectMongoDB() {
@@ -48,17 +37,40 @@ async function connectMongoDB() {
   }
 
   await mongoose.connect(process.env.MONGO_URI);
-
   mongoConnected = true;
   console.log("✅ MongoDB connected");
 }
 
-// Connect to MongoDB for every environment
-connectMongoDB().catch((error) => {
-  console.error("❌ MongoDB connection failed:", error.message);
+// Ensure database connection before handling requests
+const ensureDbConnected = async (req, res, next) => {
+  try {
+    await connectMongoDB();
+    next();
+  } catch (error) {
+    console.error("❌ MongoDB connection failed:", error.message);
+    res.status(500).render("login", {
+      message: "Database connection failed. Please try again later.",
+      messageType: "error",
+      employerId: "general",
+    });
+  }
+};
+
+// Home Route - Captures ?ref= parameter from URL
+app.get("/", ensureDbConnected, (req, res) => {
+  const ref = req.query.ref || "general";
+
+  res.render("login", {
+    message: null,
+    messageType: null,
+    employerId: ref,
+  });
 });
 
-// Start server locally / on Render
+// API Routes
+app.use("/api", ensureDbConnected, authRoutes);
+
+// Start server locally / on Render (bypassed on Vercel)
 const PORT = process.env.PORT || 2000;
 
 if (process.env.VERCEL !== "1") {
